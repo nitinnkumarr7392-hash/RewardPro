@@ -4,150 +4,112 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>DailyCoin Pro</title>
-    <!-- Google Fonts: Poppins -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- Floating Background Coins (Animation) -->
-    <div class="bg-animation"></div>
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="full-screen">
+        <div class="login-box">
+            <h1 class="gold-text">DailyCoin Pro</h1>
+            <p>Earn Real Cash Daily</p>
+            <br>
+            <input type="number" id="mobile-number" class="input-field" placeholder="Enter Mobile Number">
+            <button class="btn-gold pulse-anim" onclick="doLogin()">Get OTP & Login</button>
+            <p style="margin-top: 15px; font-size: 10px; color: #888;">100% Safe & Secure</p>
+        </div>
+    </div>
 
-    <!-- Top Header & Balance -->
-    <header class="top-bar">
-        <div class="user-info">
-            <h2>DailyCoin <span class="gold-text">Pro</span></h2>
-            <p>Welcome back, Earner!</p>
-        </div>
-        <div class="balance-card">
-            <div class="coin-balance">
-                <span id="coin-count">0</span> 🪙
-            </div>
-            <div class="rupee-balance">
-                = ₹ <span id="rupee-count">0.00</span>
-            </div>
-        </div>
-        <!-- Progress Bar for Withdrawal -->
-        <div class="progress-container">
-            <p style="font-size: 10px; color: #ccc;">Goal: ₹5 to Withdraw</p>
-            <div class="progress-bar">
-                <div class="progress-fill" id="withdraw-progress"></div>
-            </div>
-        </div>
-    </header>
-
-    <main id="main-content">
+    <!-- MAIN APP CONTENT (Hidden by default until login) -->
+    <div id="app-content" style="display: none;">
         
-        <!-- HOME TAB -->
-        <section id="home-tab" class="page active">
-            <div class="daily-streak">
-                <h3>🔥 Daily Streak Goal</h3>
-                <p>Check-in 7 days for a Mega Box!</p>
-                <button class="btn-gold pulse-anim" id="checkin-btn" onclick="dailyCheckIn()">Claim Daily Bonus (+50 🪙)</button>
+        <header class="top-bar">
+            <div class="user-info">
+                <h2>DailyCoin <span class="gold-text">Pro</span></h2>
+                <p>Welcome back!</p>
             </div>
+            <div class="balance-card">
+                <div class="coin-balance"><span id="coin-count">0</span> 🪙</div>
+                <div class="rupee-balance">= ₹ <span id="rupee-count">0.00</span></div>
+            </div>
+        </header>
 
-            <h3 class="section-title">Quick Earnings</h3>
-            
-            <div class="task-grid">
-                <div class="grid-card" onclick="spinWheel()">
-                    <div class="icon">🎡</div>
-                    <h4>Lucky Spin</h4>
-                    <p>Up to 50 Coins</p>
+        <main id="main-content">
+            <!-- HOME TAB -->
+            <section id="home-tab" class="page active">
+                <div class="task-grid">
+                    <div class="grid-card" onclick="openSpinModal()">
+                        <div class="icon">🎡</div>
+                        <h4>Lucky Spin</h4>
+                        <p>Win Daily Coins</p>
+                    </div>
+                    <div class="grid-card" onclick="completeTask(15, this, 'Video Ad')">
+                        <div class="icon">📺</div>
+                        <h4>Watch Video</h4>
+                        <p>+15 Coins</p>
+                    </div>
                 </div>
-                <div class="grid-card" onclick="completeTask(15, this, 'Video Ad')">
-                    <div class="icon">📺</div>
-                    <h4>Watch Video</h4>
-                    <p>+15 Coins</p>
+
+                <h3 class="section-title">Play & Earn (Limit: 5/Day)</h3>
+                <div class="task-card">
+                    <div class="task-icon">🎮</div>
+                    <div class="task-details">
+                        <h4>PlayTime Games</h4>
+                        <p>Earn 5 coins per minute</p>
+                    </div>
+                    <button class="btn-action" onclick="playTimeGame(this)">Play Now</button>
                 </div>
-            </div>
+            </section>
 
-            <h3 class="section-title">Play & Earn</h3>
-            <div class="task-card">
-                <div class="task-icon">🎮</div>
-                <div class="task-details">
-                    <h4>PlayTime Games</h4>
-                    <p>Earn 5 coins per minute</p>
+            <!-- WALLET TAB -->
+            <section id="wallet-tab" class="page">
+                <div class="wallet-display">
+                    <p>Total Balance</p>
+                    <h1 class="gold-text">₹ <span id="wallet-rupee">0.00</span></h1>
                 </div>
-                <button class="btn-action" onclick="completeTask(25, this, 'Games')">Play Now</button>
-            </div>
-        </section>
 
-        <!-- TASKS TAB -->
-        <section id="tasks-tab" class="page">
-            <h3 class="section-title">High Paying Offers</h3>
-            
-            <div class="task-card">
-                <div class="task-icon">🛍️</div>
-                <div class="task-details">
-                    <h4>Install Flipkart</h4>
-                    <p>Download & Open app</p>
+                <h3 class="section-title">Select Amount</h3>
+                <div class="amount-grid">
+                    <div class="amt-btn active" onclick="selectAmount(5, this)">₹5</div>
+                    <div class="amt-btn" onclick="selectAmount(10, this)">₹10</div>
+                    <div class="amt-btn" onclick="selectAmount(50, this)">₹50</div>
+                    <div class="amt-btn" onclick="selectAmount(100, this)">₹100</div>
                 </div>
-                <button class="btn-action" onclick="completeTask(200, this, 'Flipkart')">+ 200 🪙</button>
-            </div>
 
-            <div class="task-card">
-                <div class="task-icon">📈</div>
-                <div class="task-details">
-                    <h4>Upstox Demat</h4>
-                    <p>Free account open</p>
+                <h3 class="section-title">Payout Method</h3>
+                <select class="input-field" id="payout-method" onchange="changePayoutFields()">
+                    <option value="paytm">Paytm Wallet</option>
+                    <option value="upi">UPI ID</option>
+                    <option value="bank">Bank Account</option>
+                </select>
+
+                <!-- Dynamic Input Fields -->
+                <div id="dynamic-inputs">
+                    <input type="number" class="input-field" id="paytm-number" placeholder="Enter Paytm Number">
                 </div>
-                <button class="btn-action" onclick="completeTask(1000, this, 'Upstox')">+ 1000 🪙</button>
+
+                <button class="btn-gold withdraw-btn" onclick="requestWithdraw()">Withdraw Selected Amount</button>
+            </section>
+        </main>
+
+        <nav class="bottom-nav">
+            <div class="nav-item active" onclick="switchTab('home-tab', this)"><span>🏠 Home</span></div>
+            <div class="nav-item" onclick="switchTab('wallet-tab', this)"><span>💳 Wallet</span></div>
+        </nav>
+    </div>
+
+    <!-- SPIN WHEEL MODAL -->
+    <div id="spin-modal" class="modal">
+        <div class="modal-content" style="text-align: center;">
+            <h3 class="gold-text">Lucky Spin</h3>
+            <div class="wheel-container">
+                <div id="wheel" class="wheel">⭐</div>
+                <div class="wheel-pointer">⬇</div>
             </div>
-
-            <div class="task-card">
-                <div class="task-icon">📝</div>
-                <div class="task-details">
-                    <h4>BitLabs Survey</h4>
-                    <p>5 min simple survey</p>
-                </div>
-                <button class="btn-action" onclick="completeTask(150, this, 'Survey')">+ 150 🪙</button>
-            </div>
-        </section>
-
-        <!-- WALLET TAB -->
-        <section id="wallet-tab" class="page">
-            <div class="wallet-display">
-                <p>Total Available Balance</p>
-                <h1 class="gold-text">₹ <span id="wallet-rupee">0.00</span></h1>
-                <p>Coins: <span id="wallet-coins">0</span></p>
-            </div>
-
-            <h3 class="section-title">Withdraw Method</h3>
-            <div class="payout-methods">
-                <div class="method active">Paytm</div>
-                <div class="method">UPI</div>
-                <div class="method">G-Pay</div>
-            </div>
-
-            <input type="text" class="input-field" placeholder="Enter UPI ID or Number" id="payout-id">
-            <button class="btn-gold withdraw-btn" onclick="requestWithdraw()">Withdraw ₹5 Now</button>
-        </section>
-
-    </main>
-
-    <!-- Bottom Navigation -->
-    <nav class="bottom-nav">
-        <div class="nav-item active" onclick="switchTab('home-tab', this)">
-            <div class="nav-icon">🏠</div>
-            <span>Home</span>
-        </div>
-        <div class="nav-item" onclick="switchTab('tasks-tab', this)">
-            <div class="nav-icon">📋</div>
-            <span>Tasks</span>
-        </div>
-        <div class="nav-item" onclick="switchTab('wallet-tab', this)">
-            <div class="nav-icon">💳</div>
-            <span>Wallet</span>
-        </div>
-    </nav>
-
-    <!-- Success Modal/Popup -->
-    <div id="success-modal" class="modal">
-        <div class="modal-content">
-            <div class="check-icon">✔️</div>
-            <h3 id="modal-title">Success!</h3>
-            <p id="modal-msg">+50 Coins added</p>
-            <button class="btn-action" onclick="closeModal()">Awesome</button>
+            <button class="btn-gold" id="spin-btn" onclick="startSpin()">SPIN NOW</button>
+            <br><br>
+            <button class="btn-action" onclick="closeSpinModal()">Close</button>
         </div>
     </div>
 
