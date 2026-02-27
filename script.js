@@ -1,49 +1,114 @@
-// Current Balance
-let currentBalance = 50.00;
+// App Economy Config
+let totalCoins = 0;
+const coinValueInRupees = 100; // 100 Coins = 1 Rupee
+const minWithdrawRupees = 5; // Minimum 5 Rupees withdraw
 
-// Function to switch tabs (Bottom Navigation)
+// Function to update UI Balance
+function updateBalance() {
+    const rupees = (totalCoins / coinValueInRupees).toFixed(2);
+    
+    // Update Header
+    document.getElementById('coin-count').innerText = totalCoins;
+    document.getElementById('rupee-count').innerText = rupees;
+    
+    // Update Wallet Page
+    document.getElementById('wallet-coins').innerText = totalCoins;
+    document.getElementById('wallet-rupee').innerText = rupees;
+
+    // Update Progress Bar
+    const progressPercent = Math.min(((rupees / minWithdrawRupees) * 100), 100);
+    document.getElementById('withdraw-progress').style.width = `${progressPercent}%`;
+
+    // Change progress bar color if target reached
+    if (progressPercent >= 100) {
+        document.getElementById('withdraw-progress').style.background = "#00FF88"; // Green when ready
+    }
+}
+
+// Function to switch Bottom Navigation Tabs
 function switchTab(tabId, element) {
     // Hide all pages
-    const pages = document.querySelectorAll('.page');
-    pages.forEach(page => page.classList.remove('active'));
-
-    // Show the selected page
+    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
     document.getElementById(tabId).classList.add('active');
 
-    // Remove active class from all nav items
-    const navItems = document.querySelectorAll('.nav-item');
-    navItems.forEach(item => item.classList.remove('active'));
-
-    // Add active class to clicked nav item
+    // Remove active style from all nav items
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
     element.classList.add('active');
 }
 
-// Function to simulate earning money from a task
-function addMoney(amount, buttonElement) {
-    // Update balance
-    currentBalance += amount;
+// Task Completion Logic
+function completeTask(coinsToReward, buttonElement, taskName) {
+    // Prevent double clicking
+    if(buttonElement.disabled) return;
     
-    // Update UI
-    document.getElementById('balance').innerText = currentBalance.toFixed(2);
-    document.getElementById('wallet-balance-big').innerText = currentBalance.toFixed(2);
+    // Add coins
+    totalCoins += coinsToReward;
+    updateBalance();
 
-    // Change button to show success
-    buttonElement.innerText = "Claimed ✓";
-    buttonElement.style.backgroundColor = "#ccc";
+    // Visual Feedback on Button
+    buttonElement.innerText = "Completed ✔";
+    buttonElement.style.background = "rgba(0, 255, 136, 0.2)";
+    buttonElement.style.color = "#00FF88";
     buttonElement.disabled = true;
 
-    // Small popup alert
-    alert(`Mubarak ho! ₹${amount} aapke wallet mein add ho gaye hain.`);
+    // Show Success Modal
+    showModal("Task Completed!", `+${coinsToReward} Coins added from ${taskName}`);
 }
 
-// Function to handle withdrawal
-function withdraw() {
-    if (currentBalance >= 100) {
-        alert("Withdrawal request lag gayi hai! Paise 24 ghante mein aapke account mein aa jayenge.");
-        currentBalance = 0; // Reset balance after withdraw
-        document.getElementById('balance').innerText = "0.00";
-        document.getElementById('wallet-balance-big').innerText = "0.00";
-    } else {
-        alert("Bhai, minimum withdrawal ₹100 hai. Abhi aur tasks pure karo!");
+// Daily Check-In Specific Logic
+function dailyCheckIn() {
+    const btn = document.getElementById('checkin-btn');
+    if(!btn.disabled) {
+        totalCoins += 50;
+        updateBalance();
+        btn.innerText = "Claimed for Today ✔";
+        btn.style.background = "rgba(255,255,255,0.1)";
+        btn.classList.remove('pulse-anim');
+        btn.disabled = true;
+        showModal("Streak Maintained! 🔥", "+50 Coins added to your wallet.");
     }
 }
+
+// Lucky Spin Simulation
+function spinWheel() {
+    // Generate random coins between 5 and 50
+    const randomCoins = Math.floor(Math.random() * (50 - 5 + 1)) + 5;
+    totalCoins += randomCoins;
+    updateBalance();
+    showModal("Lucky Spin Winner! 🎡", `You won ${randomCoins} Coins!`);
+}
+
+// Withdrawal Logic
+function requestWithdraw() {
+    const currentRupees = totalCoins / coinValueInRupees;
+    const paymentId = document.getElementById('payout-id').value;
+
+    if(paymentId === "") {
+        alert("Please enter your Paytm/UPI ID first!");
+        return;
+    }
+
+    if (currentRupees >= minWithdrawRupees) {
+        showModal("Withdrawal Successful! 💸", `₹${currentRupees.toFixed(2)} sent to ${paymentId}. Please wait 24 hours.`);
+        // Reset balance
+        totalCoins = 0;
+        updateBalance();
+        document.getElementById('payout-id').value = "";
+    } else {
+        alert(`Bhai, ₹5 minimum withdraw hai. Abhi aapke paas ₹${currentRupees.toFixed(2)} hain.`);
+    }
+}
+
+// Modal Control Functions
+function showModal(title, message) {
+    document.getElementById('modal-title').innerText = title;
+    document.getElementById('modal-msg').innerText = message;
+    document.getElementById('success-modal').style.display = "flex";
+}
+
+function closeModal() {
+    document.getElementById('success-modal').style.display = "none";
+}
+
+// Initialize Dashboard
+updateBalance();
