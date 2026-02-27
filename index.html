@@ -3,105 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RewardPro - Earning App</title>
+    <title>DailyCoin Pro</title>
+    <!-- Google Fonts: Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- Top Header -->
-    <header class="app-header">
-        <div class="logo">🚀 RewardPro</div>
-        <div class="wallet-balance">
-            <span>₹ <span id="balance">50.00</span></span>
+    <!-- Floating Background Coins (Animation) -->
+    <div class="bg-animation"></div>
+
+    <!-- Top Header & Balance -->
+    <header class="top-bar">
+        <div class="user-info">
+            <h2>DailyCoin <span class="gold-text">Pro</span></h2>
+            <p>Welcome back, Earner!</p>
+        </div>
+        <div class="balance-card">
+            <div class="coin-balance">
+                <span id="coin-count">0</span> 🪙
+            </div>
+            <div class="rupee-balance">
+                = ₹ <span id="rupee-count">0.00</span>
+            </div>
+        </div>
+        <!-- Progress Bar for Withdrawal -->
+        <div class="progress-container">
+            <p style="font-size: 10px; color: #ccc;">Goal: ₹5 to Withdraw</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="withdraw-progress"></div>
+            </div>
         </div>
     </header>
 
-    <!-- Main Content Area -->
     <main id="main-content">
         
-        <!-- HOME SECTION -->
-        <section id="home-sec" class="page active">
-            <h2>Welcome Back, Bhai! 👋</h2>
-            <div class="banner">
-                <h3>Refer & Earn ₹50</h3>
-                <p>Invite friends and earn 10% lifetime commission.</p>
-                <button class="btn-primary">Invite Now</button>
+        <!-- HOME TAB -->
+        <section id="home-tab" class="page active">
+            <div class="daily-streak">
+                <h3>🔥 Daily Streak Goal</h3>
+                <p>Check-in 7 days for a Mega Box!</p>
+                <button class="btn-gold pulse-anim" id="checkin-btn" onclick="dailyCheckIn()">Claim Daily Bonus (+50 🪙)</button>
             </div>
+
+            <h3 class="section-title">Quick Earnings</h3>
             
-            <h3 class="section-title">Daily Rewards</h3>
-            <div class="daily-checkin">
-                <p>Day 1 Check-in</p>
-                <button class="btn-secondary" onclick="addMoney(5, this)">Claim ₹5</button>
+            <div class="task-grid">
+                <div class="grid-card" onclick="spinWheel()">
+                    <div class="icon">🎡</div>
+                    <h4>Lucky Spin</h4>
+                    <p>Up to 50 Coins</p>
+                </div>
+                <div class="grid-card" onclick="completeTask(15, this, 'Video Ad')">
+                    <div class="icon">📺</div>
+                    <h4>Watch Video</h4>
+                    <p>+15 Coins</p>
+                </div>
+            </div>
+
+            <h3 class="section-title">Play & Earn</h3>
+            <div class="task-card">
+                <div class="task-icon">🎮</div>
+                <div class="task-details">
+                    <h4>PlayTime Games</h4>
+                    <p>Earn 5 coins per minute</p>
+                </div>
+                <button class="btn-action" onclick="completeTask(25, this, 'Games')">Play Now</button>
             </div>
         </section>
 
-        <!-- TASKS SECTION -->
-        <section id="tasks-sec" class="page">
-            <h3 class="section-title">High Paying Tasks</h3>
+        <!-- TASKS TAB -->
+        <section id="tasks-tab" class="page">
+            <h3 class="section-title">High Paying Offers</h3>
             
             <div class="task-card">
-                <div class="task-info">
-                    <h4>Download Dream11</h4>
-                    <p>Install, Register & Play 1 game.</p>
+                <div class="task-icon">🛍️</div>
+                <div class="task-details">
+                    <h4>Install Flipkart</h4>
+                    <p>Download & Open app</p>
                 </div>
-                <button class="btn-success" onclick="addMoney(30, this)">+ ₹30</button>
+                <button class="btn-action" onclick="completeTask(200, this, 'Flipkart')">+ 200 🪙</button>
             </div>
 
             <div class="task-card">
-                <div class="task-info">
-                    <h4>Open Upstox Account</h4>
-                    <p>Free Demat account open karein.</p>
+                <div class="task-icon">📈</div>
+                <div class="task-details">
+                    <h4>Upstox Demat</h4>
+                    <p>Free account open</p>
                 </div>
-                <button class="btn-success" onclick="addMoney(150, this)">+ ₹150</button>
+                <button class="btn-action" onclick="completeTask(1000, this, 'Upstox')">+ 1000 🪙</button>
+            </div>
+
+            <div class="task-card">
+                <div class="task-icon">📝</div>
+                <div class="task-details">
+                    <h4>BitLabs Survey</h4>
+                    <p>5 min simple survey</p>
+                </div>
+                <button class="btn-action" onclick="completeTask(150, this, 'Survey')">+ 150 🪙</button>
             </div>
         </section>
 
-        <!-- CASHBACK SECTION -->
-        <section id="cashback-sec" class="page">
-            <h3 class="section-title">Shop & Earn Cashback</h3>
-            
-            <div class="task-card">
-                <div class="task-info">
-                    <h4>Amazon India</h4>
-                    <p>Upto 8% Cashback on Electronics</p>
-                </div>
-                <button class="btn-primary">Shop Now</button>
+        <!-- WALLET TAB -->
+        <section id="wallet-tab" class="page">
+            <div class="wallet-display">
+                <p>Total Available Balance</p>
+                <h1 class="gold-text">₹ <span id="wallet-rupee">0.00</span></h1>
+                <p>Coins: <span id="wallet-coins">0</span></p>
             </div>
 
-            <div class="task-card">
-                <div class="task-info">
-                    <h4>Myntra</h4>
-                    <p>Flat 10% Cashback on Fashion</p>
-                </div>
-                <button class="btn-primary">Shop Now</button>
-            </div>
-        </section>
-
-        <!-- WALLET SECTION -->
-        <section id="wallet-sec" class="page">
-            <div class="wallet-card">
-                <h3>Total Balance</h3>
-                <h1 style="color: white;">₹ <span id="wallet-balance-big">50.00</span></h1>
-                <p>Minimum withdraw ₹100</p>
-            </div>
-            <br>
             <h3 class="section-title">Withdraw Method</h3>
-            <div class="withdraw-options">
-                <button class="btn-outline">Paytm</button>
-                <button class="btn-outline">UPI</button>
+            <div class="payout-methods">
+                <div class="method active">Paytm</div>
+                <div class="method">UPI</div>
+                <div class="method">G-Pay</div>
             </div>
-            <button class="btn-primary withdraw-btn" onclick="withdraw()">Withdraw Money</button>
+
+            <input type="text" class="input-field" placeholder="Enter UPI ID or Number" id="payout-id">
+            <button class="btn-gold withdraw-btn" onclick="requestWithdraw()">Withdraw ₹5 Now</button>
         </section>
 
     </main>
 
-    <!-- Bottom Navigation Bar -->
+    <!-- Bottom Navigation -->
     <nav class="bottom-nav">
-        <div class="nav-item active" onclick="switchTab('home-sec', this)">🏠<br>Home</div>
-        <div class="nav-item" onclick="switchTab('tasks-sec', this)">📋<br>Tasks</div>
-        <div class="nav-item" onclick="switchTab('cashback-sec', this)">🛍️<br>Cashback</div>
-        <div class="nav-item" onclick="switchTab('wallet-sec', this)">💳<br>Wallet</div>
+        <div class="nav-item active" onclick="switchTab('home-tab', this)">
+            <div class="nav-icon">🏠</div>
+            <span>Home</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('tasks-tab', this)">
+            <div class="nav-icon">📋</div>
+            <span>Tasks</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('wallet-tab', this)">
+            <div class="nav-icon">💳</div>
+            <span>Wallet</span>
+        </div>
     </nav>
+
+    <!-- Success Modal/Popup -->
+    <div id="success-modal" class="modal">
+        <div class="modal-content">
+            <div class="check-icon">✔️</div>
+            <h3 id="modal-title">Success!</h3>
+            <p id="modal-msg">+50 Coins added</p>
+            <button class="btn-action" onclick="closeModal()">Awesome</button>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
