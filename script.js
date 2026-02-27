@@ -1,114 +1,151 @@
-// App Economy Config
-let totalCoins = 0;
+// --- 1. LOCAL STORAGE (Save Data Permanently) ---
+let totalCoins = parseInt(localStorage.getItem('userCoins')) || 0;
+let playtimeLimit = parseInt(localStorage.getItem('playLimit')) || 5; 
 const coinValueInRupees = 100; // 100 Coins = 1 Rupee
-const minWithdrawRupees = 5; // Minimum 5 Rupees withdraw
+let selectedWithdrawAmount = 5; // Default amount
 
-// Function to update UI Balance
-function updateBalance() {
-    const rupees = (totalCoins / coinValueInRupees).toFixed(2);
-    
-    // Update Header
-    document.getElementById('coin-count').innerText = totalCoins;
-    document.getElementById('rupee-count').innerText = rupees;
-    
-    // Update Wallet Page
-    document.getElementById('wallet-coins').innerText = totalCoins;
-    document.getElementById('wallet-rupee').innerText = rupees;
-
-    // Update Progress Bar
-    const progressPercent = Math.min(((rupees / minWithdrawRupees) * 100), 100);
-    document.getElementById('withdraw-progress').style.width = `${progressPercent}%`;
-
-    // Change progress bar color if target reached
-    if (progressPercent >= 100) {
-        document.getElementById('withdraw-progress').style.background = "#00FF88"; // Green when ready
+// Check Login Status on Start
+window.onload = function() {
+    if(localStorage.getItem('isLoggedIn') === 'true') {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app-content').style.display = 'block';
+        updateBalance();
     }
 }
 
-// Function to switch Bottom Navigation Tabs
-function switchTab(tabId, element) {
-    // Hide all pages
-    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
+function doLogin() {
+    const mobile = document.getElementById('mobile-number').value;
+    if(mobile.length >= 10) {
+        // Save to Local Storage
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('userMobile', mobile);
+        
+        // Change screen
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app-content').style.display = 'block';
+        updateBalance();
+    } else {
+        alert("Bhai, sahi mobile number daalo (10 digits).");
+    }
+}
 
-    // Remove active style from all nav items
-    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+// --- 2. BALANCE & REFRESH FIX ---
+function updateBalance() {
+    // Save coins to storage so they don't disappear on refresh
+    localStorage.setItem('userCoins', totalCoins);
+    
+    const rupees = (totalCoins / coinValueInRupees).toFixed(2);
+    document.getElementById('coin-count').innerText = totalCoins;
+    document.getElementById('rupee-count').innerText = rupees;
+    document.getElementById('wallet-rupee').innerText = rupees;
+}
+
+// --- 3. SPIN WHEEL LOGIC (With Animation) ---
+function openSpinModal() {
+    document.getElementById('spin-modal').style.display = 'flex';
+}
+
+function closeSpinModal() {
+    document.getElementById('spin-modal').style.display = 'none';
+    document.getElementById('wheel').style.transform = `rotate(0deg)`; // reset
+    document.getElementById('spin-btn').disabled = false;
+}
+
+function startSpin() {
+    const spinBtn = document.getElementById('spin-btn');
+    spinBtn.disabled = true; // Disable button while spinning
+    
+    const wheel = document.getElementById('wheel');
+    // Rotate wheel 5 times (1800 deg) + random angle
+    const randomDegree = 1800 + Math.floor(Math.random() * 360);
+    wheel.style.transform = `rotate(${randomDegree}deg)`;
+
+    // Wait for 3 seconds (duration of animation)
+    setTimeout(() => {
+        const wonCoins = Math.floor(Math.random() * 20) + 5; // Win 5 to 25 coins
+        totalCoins += wonCoins;
+        updateBalance();
+        alert(`Mubarak ho! Aapne ${wonCoins} Coins jeete hain!`);
+        closeSpinModal();
+    }, 3000);
+}
+
+// --- 4. PLAYTIME GAMES (Limit Fix) ---
+function playTimeGame(btn) {
+    if(playtimeLimit > 0) {
+        totalCoins += 25; // 5 mins worth of coins
+        playtimeLimit--;
+        localStorage.setItem('playLimit', playtimeLimit); // Save limit
+        updateBalance();
+        alert(`Bhai game khelne ke 25 coins mil gaye. Remaining limit: ${playtimeLimit}`);
+    } else {
+        btn.disabled = true;
+        btn.innerText = "Limit Reached";
+        alert("Aaj ki limit khatam! Kal wapas aana.");
+    }
+}
+
+// --- 5. WITHDRAWAL SYSTEM (Amount + Bank details) ---
+function selectAmount(amt, element) {
+    selectedWithdrawAmount = amt;
+    
+    // UI Update
+    document.querySelectorAll('.amt-btn').forEach(btn => btn.classList.remove('active'));
     element.classList.add('active');
 }
 
-// Task Completion Logic
-function completeTask(coinsToReward, buttonElement, taskName) {
-    // Prevent double clicking
-    if(buttonElement.disabled) return;
+function changePayoutFields() {
+    const method = document.getElementById('payout-method').value;
+    const inputsDiv = document.getElementById('dynamic-inputs');
     
-    // Add coins
-    totalCoins += coinsToReward;
-    updateBalance();
-
-    // Visual Feedback on Button
-    buttonElement.innerText = "Completed ✔";
-    buttonElement.style.background = "rgba(0, 255, 136, 0.2)";
-    buttonElement.style.color = "#00FF88";
-    buttonElement.disabled = true;
-
-    // Show Success Modal
-    showModal("Task Completed!", `+${coinsToReward} Coins added from ${taskName}`);
-}
-
-// Daily Check-In Specific Logic
-function dailyCheckIn() {
-    const btn = document.getElementById('checkin-btn');
-    if(!btn.disabled) {
-        totalCoins += 50;
-        updateBalance();
-        btn.innerText = "Claimed for Today ✔";
-        btn.style.background = "rgba(255,255,255,0.1)";
-        btn.classList.remove('pulse-anim');
-        btn.disabled = true;
-        showModal("Streak Maintained! 🔥", "+50 Coins added to your wallet.");
+    if(method === 'paytm') {
+        inputsDiv.innerHTML = `<input type="number" class="input-field" id="payout-id" placeholder="Enter Paytm Number">`;
+    } 
+    else if(method === 'upi') {
+        inputsDiv.innerHTML = `<input type="text" class="input-field" id="payout-id" placeholder="Enter UPI ID (e.g. 987@ybl)">`;
+    } 
+    else if(method === 'bank') {
+        inputsDiv.innerHTML = `
+            <input type="number" class="input-field" id="payout-acc" placeholder="Account Number">
+            <input type="text" class="input-field" id="payout-ifsc" placeholder="IFSC Code">
+        `;
     }
 }
 
-// Lucky Spin Simulation
-function spinWheel() {
-    // Generate random coins between 5 and 50
-    const randomCoins = Math.floor(Math.random() * (50 - 5 + 1)) + 5;
-    totalCoins += randomCoins;
-    updateBalance();
-    showModal("Lucky Spin Winner! 🎡", `You won ${randomCoins} Coins!`);
-}
-
-// Withdrawal Logic
 function requestWithdraw() {
     const currentRupees = totalCoins / coinValueInRupees;
-    const paymentId = document.getElementById('payout-id').value;
+    const method = document.getElementById('payout-method').value;
+    
+    // Checking inputs
+    let isInputValid = false;
+    if(method === 'bank') {
+        const acc = document.getElementById('payout-acc').value;
+        const ifsc = document.getElementById('payout-ifsc').value;
+        if(acc !== "" && ifsc !== "") isInputValid = true;
+    } else {
+        const id = document.getElementById('payout-id').value;
+        if(id !== "") isInputValid = true;
+    }
 
-    if(paymentId === "") {
-        alert("Please enter your Paytm/UPI ID first!");
+    if(!isInputValid) {
+        alert("Bhai, pehle poori Bank/UPI details toh daalo!");
         return;
     }
 
-    if (currentRupees >= minWithdrawRupees) {
-        showModal("Withdrawal Successful! 💸", `₹${currentRupees.toFixed(2)} sent to ${paymentId}. Please wait 24 hours.`);
-        // Reset balance
-        totalCoins = 0;
+    // Checking Balance
+    if (currentRupees >= selectedWithdrawAmount) {
+        totalCoins -= (selectedWithdrawAmount * coinValueInRupees); // Deduct selected amount
         updateBalance();
-        document.getElementById('payout-id').value = "";
+        alert(`Success! ₹${selectedWithdrawAmount} ki request lag gayi hai. Paise 24 ghante mein aa jayenge.`);
     } else {
-        alert(`Bhai, ₹5 minimum withdraw hai. Abhi aapke paas ₹${currentRupees.toFixed(2)} hain.`);
+        alert(`Balance kam hai. Aapke paas ₹${currentRupees.toFixed(2)} hain, aur aap ₹${selectedWithdrawAmount} nikalna chahte hain.`);
     }
 }
 
-// Modal Control Functions
-function showModal(title, message) {
-    document.getElementById('modal-title').innerText = title;
-    document.getElementById('modal-msg').innerText = message;
-    document.getElementById('success-modal').style.display = "flex";
+// Basic Tabs
+function switchTab(tabId, element) {
+    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    element.classList.add('active');
 }
-
-function closeModal() {
-    document.getElementById('success-modal').style.display = "none";
-}
-
-// Initialize Dashboard
-updateBalance();
